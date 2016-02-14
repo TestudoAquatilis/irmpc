@@ -1,0 +1,4 @@
+.*.swp
+src/obj
+src/irmpc
+src/*.cfg
