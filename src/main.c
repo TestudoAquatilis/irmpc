@@ -12,6 +12,8 @@ struct irmpc_options {
     int  mpd_port;
 
     char *lirc_config;
+
+    bool verbose;
 };
 
 static struct irmpc_options options = {
@@ -19,7 +21,8 @@ static struct irmpc_options options = {
     .mpd_hostname = NULL,
     .mpd_password = NULL,
     .mpd_port     = 6600,
-    .lirc_config  = NULL
+    .lirc_config  = NULL,
+    .verbose      = false
 };
 
 static GOptionEntry option_entries[] = {
@@ -27,7 +30,9 @@ static GOptionEntry option_entries[] = {
     {"hostname",   'H', 0, G_OPTION_ARG_STRING,   &(options.mpd_hostname), "Hostname of host running mpd",         "host"},
     {"password",   'p', 0, G_OPTION_ARG_STRING,   &(options.mpd_password), "Password of mpd",                      "password"},
     {"port",       'P', 0, G_OPTION_ARG_INT,      &(options.mpd_password), "Port of mpd - default: port=6600",     "port"},
-    {"lircconfig", 'l', 0, G_OPTION_ARG_FILENAME, &(options.lirc_config),  "Configuration file for lirc commands", "filename"}
+    {"lircconfig", 'l', 0, G_OPTION_ARG_FILENAME, &(options.lirc_config),  "Configuration file for lirc commands", "filename"},
+    {"verbose",    'v', 0, 0,                     &(options.verbose),      "Set to verbose",                       NULL},
+    {NULL}
 };
 
 bool options_from_file ()
@@ -79,28 +84,38 @@ bool options_from_file ()
 bool options_check ()
 {
     if (options.config_file != NULL) {
-        printf ("config-file: %s\n", options.config_file);
+        if (options.verbose) {
+            printf ("config-file: %s\n", options.config_file);
+        }
     }
     if (options.mpd_hostname == NULL) {
         fprintf (stderr, "ERROR: no hostname specified\n");
         return false;
     } else {
-        printf ("hostname: %s\n", options.mpd_hostname);
+        if (options.verbose) {
+            printf ("hostname: %s\n", options.mpd_hostname);
+        }
     }
     if ((options.mpd_port < 0) || (options.mpd_port >= (1 << 16))) {
         fprintf (stderr, "ERROR: port needs to be in range 0 ... %d\n", (1 << 16));
         return false;
     } else {
-        printf ("port: %d\n", options.mpd_port);
+        if (options.verbose) {
+            printf ("port: %d\n", options.mpd_port);
+        }
     }
     if (options.mpd_password != NULL) {
-        printf ("password: %s\n", options.mpd_password);
+        if (options.verbose) {
+            printf ("password: %s\n", options.mpd_password);
+        }
     }
     if (options.lirc_config == NULL) {
         fprintf (stderr, "ERROR: no lirc configuration file specified\n");
         return false;
     } else {
-        printf ("lirc configuration: %s\n", options.lirc_config);
+        if (options.verbose) {
+            printf ("lirc configuration: %s\n", options.lirc_config);
+        }
     }
 
     return true;
