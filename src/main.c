@@ -195,6 +195,11 @@ int main (int argc, char **argv)
         goto exit_error;
     }
 
+    // TODO: main loop
+    // TODO: lirc reading
+    // TODO: mpd controlling
+    // TODO: signal catching
+
     playlist_free ();
     g_option_context_free (option_context);
 
