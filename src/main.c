@@ -1,9 +1,15 @@
 #include <stdio.h>
 #include <stdbool.h>
+#include <stdlib.h>
+#include <string.h>
 #include <glib.h>
 
 
-/* configuration */
+#include "playlist.h"
+
+/* ================================================================================================================================= */
+/* || configuration */
+/* ================================================================================================================================= */
 struct irmpc_options {
     char *config_file;
 
@@ -14,6 +20,7 @@ struct irmpc_options {
     char *lirc_config;
 
     bool verbose;
+    bool debug;
 };
 
 static struct irmpc_options options = {
@@ -22,7 +29,8 @@ static struct irmpc_options options = {
     .mpd_password = NULL,
     .mpd_port     = 6600,
     .lirc_config  = NULL,
-    .verbose      = false
+    .verbose      = false,
+    .debug        = false
 };
 
 static GOptionEntry option_entries[] = {
@@ -32,6 +40,7 @@ static GOptionEntry option_entries[] = {
     {"port",       'P', 0, G_OPTION_ARG_INT,      &(options.mpd_password), "Port of mpd - default: port=6600",     "port"},
     {"lircconfig", 'l', 0, G_OPTION_ARG_FILENAME, &(options.lirc_config),  "Configuration file for lirc commands", "filename"},
     {"verbose",    'v', 0, 0,                     &(options.verbose),      "Set to verbose",                       NULL},
+    {"debug",      'd', 0, 0,                     &(options.debug),        "Activate debug output",                NULL},
     {NULL}
 };
 
@@ -71,6 +80,41 @@ bool options_from_file ()
     tempstr = g_key_file_get_string (key_file, "lirc", "config-file", &error);
     if (tempstr != NULL) {options.lirc_config = tempstr;}
 
+
+    /* playlists */
+    gchar **tempstrlist;
+    gsize listlen;
+    tempstrlist = g_key_file_get_keys (key_file, "playlists", &listlen, &error);
+    if (tempstrlist != NULL) {
+        for (int i = 0; i < listlen; i++) {
+            char *number_str = tempstrlist[i];
+            char *endptr;
+            long int number = strtol(number_str, &endptr, 10);
+            if ((*number_str == '\0') || (*endptr != '\0') || (number < 0)) continue;
+
+            gsize entrylen;
+            gchar **entrylist = g_key_file_get_string_list (key_file, "playlists", number_str, &entrylen, &error);
+
+            if (entrylist == NULL) continue;
+
+            if (entrylen > 0) {
+                char *entryname = entrylist[0];
+                bool entryrand  = false;
+                if (entrylen > 1) {
+                    if (strcmp (entrylist[1], "r") == 0) {
+                        entryrand = true;
+                    }
+                }
+
+                playlist_add (number, entryname, entryrand);
+            }
+
+            g_strfreev (entrylist);
+        }
+
+        g_strfreev (tempstrlist);
+    }
+
     /* free */
     g_key_file_free (key_file);
     if (error != NULL) {
@@ -84,7 +128,7 @@ bool options_from_file ()
 bool options_check ()
 {
     if (options.config_file != NULL) {
-        if (options.verbose) {
+        if (options.debug) {
             printf ("config-file: %s\n", options.config_file);
         }
     }
@@ -92,7 +136,7 @@ bool options_check ()
         fprintf (stderr, "ERROR: no hostname specified\n");
         return false;
     } else {
-        if (options.verbose) {
+        if (options.debug) {
             printf ("hostname: %s\n", options.mpd_hostname);
         }
     }
@@ -100,12 +144,12 @@ bool options_check ()
         fprintf (stderr, "ERROR: port needs to be in range 0 ... %d\n", (1 << 16));
         return false;
     } else {
-        if (options.verbose) {
+        if (options.debug) {
             printf ("port: %d\n", options.mpd_port);
         }
     }
     if (options.mpd_password != NULL) {
-        if (options.verbose) {
+        if (options.debug) {
             printf ("password: %s\n", options.mpd_password);
         }
     }
@@ -113,14 +157,21 @@ bool options_check ()
         fprintf (stderr, "ERROR: no lirc configuration file specified\n");
         return false;
     } else {
-        if (options.verbose) {
+        if (options.debug) {
             printf ("lirc configuration: %s\n", options.lirc_config);
         }
+    }
+
+    if (options.debug) {
+        playlist_print_debug ();
     }
 
     return true;
 }
 
+/* ================================================================================================================================= */
+/* || main */
+/* ================================================================================================================================= */
 int main (int argc, char **argv)
 {
     /* option parsing */
@@ -144,6 +195,8 @@ int main (int argc, char **argv)
         goto exit_error;
     }
 
+    playlist_free ();
+
     return 0;
 
 exit_error:
@@ -151,5 +204,6 @@ exit_error:
     if (error != NULL) {
         g_error_free (error);
     }
+    playlist_free ();
     return 1;
 }
