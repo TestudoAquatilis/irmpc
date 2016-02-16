@@ -196,6 +196,7 @@ int main (int argc, char **argv)
     }
 
     playlist_free ();
+    g_option_context_free (option_context);
 
     return 0;
 
