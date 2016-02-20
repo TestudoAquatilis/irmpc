@@ -3,8 +3,8 @@
 
 #include <stdbool.h>
 
-void playlist_add  (unsigned int number, const char *name, bool random);
-void playlist_free ();
-void playlist_print_debug ();
+void irmpc_playlist_add  (unsigned int number, const char *name, bool random);
+void irmpc_playlist_free ();
+void irmpc_playlist_print_debug ();
 
 #endif

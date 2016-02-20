@@ -22,7 +22,7 @@ static gint playlist_table_cmp_func (gconstpointer a, gconstpointer b)
     return 0;
 }
 
-void playlist_add (unsigned int number, const char *name, bool random)
+void irmpc_playlist_add (unsigned int number, const char *name, bool random)
 {
     if (name == NULL) return;
 
@@ -56,7 +56,7 @@ static gboolean playlist_entry_free (gpointer key, gpointer value, gpointer data
     return false;
 }
 
-void playlist_free ()
+void irmpc_playlist_free ()
 {
     if (playlist_table != NULL) {
         g_tree_foreach (playlist_table, playlist_entry_free, NULL);
@@ -82,7 +82,7 @@ static gboolean playlist_entry_print_debug (gpointer key, gpointer value, gpoint
     return false;
 }
 
-void playlist_print_debug ()
+void irmpc_playlist_print_debug ()
 {
     if (playlist_table != NULL) {
         fprintf (stderr, "playlist:\n");

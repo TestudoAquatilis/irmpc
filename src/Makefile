@@ -8,7 +8,7 @@ LIBS=glib-2.0
 CFLAGS+=$(shell pkg-config --cflags $(LIBS))
 LDFLAGS+=$(shell pkg-config --libs $(LIBS))
 
-SOURCES=main.c playlist.c
+SOURCES=playlist.c options.c main.c
 EXECUTABLE=irmpc
 
 OBJDIR=obj
