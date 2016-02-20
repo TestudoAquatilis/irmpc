@@ -29,8 +29,11 @@ bool irmpc_irhandler ()
         char *c = NULL;
 
         while (((ret = lirc_code2char (config, code, &c)) == 0) && (c != NULL)) {
+            if (irmpc_options.debug) {
+                printf ("Got command: \"%s\"\n", c);
+            }
+
             // TODO: mpd controlling
-            printf ("Got command: \"%s\"\n", c);
         }
 
         free (code);

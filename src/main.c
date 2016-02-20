@@ -13,7 +13,6 @@ int main (int argc, char **argv)
 
     // TODO: signal catching
 
-
     irmpc_playlist_free ();
 
     return 0;
