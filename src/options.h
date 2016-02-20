@@ -12,6 +12,8 @@ struct _irmpc_options {
 
     char *lirc_config;
 
+    char *progname;
+
     bool verbose;
     bool debug;
 };

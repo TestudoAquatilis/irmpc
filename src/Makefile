@@ -6,9 +6,9 @@ LDFLAGS=$(OPTFLAGS)
 LIBS=glib-2.0
 
 CFLAGS+=$(shell pkg-config --cflags $(LIBS))
-LDFLAGS+=$(shell pkg-config --libs $(LIBS))
+LDFLAGS+=$(shell pkg-config --libs $(LIBS)) -llirc_client
 
-SOURCES=playlist.c options.c main.c
+SOURCES=playlist.c options.c irhandler.c main.c
 EXECUTABLE=irmpc
 
 OBJDIR=obj

@@ -12,6 +12,7 @@ struct _irmpc_options irmpc_options = {
     .mpd_password = NULL,
     .mpd_port     = 6600,
     .lirc_config  = NULL,
+    .progname     = "irmpc",
     .verbose      = false,
     .debug        = false
 };

@@ -1,5 +1,6 @@
 #include "options.h"
 #include "playlist.h"
+#include "irhandler.h"
 
 int main (int argc, char **argv)
 {
@@ -7,9 +8,9 @@ int main (int argc, char **argv)
         goto exit_error;
     }
 
-    // TODO: main loop
-    // TODO: lirc reading
-    // TODO: mpd controlling
+    // main loop ...
+    irmpc_irhandler ();
+
     // TODO: signal catching
 
 

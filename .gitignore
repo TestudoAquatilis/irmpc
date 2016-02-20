@@ -2,3 +2,4 @@
 src/obj
 src/irmpc
 src/*.cfg
+src/*.conf
