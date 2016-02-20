@@ -3,6 +3,7 @@
 
 #include <lirc/lirc_client.h>
 #include <stdio.h>
+#include <stdlib.h>
 
 bool irmpc_irhandler ()
 {
@@ -19,8 +20,23 @@ bool irmpc_irhandler ()
     }
 
     // main loop
-    // TODO: lirc reading
-    // TODO: mpd controlling
+    char *code;
+
+    while (lirc_nextcode (&code) == 0) {
+        if (code == NULL) continue;
+
+        int ret;
+        char *c = NULL;
+
+        while (((ret = lirc_code2char (config, code, &c)) == 0) && (c != NULL)) {
+            // TODO: mpd controlling
+            printf ("Got command: \"%s\"\n", c);
+        }
+
+        free (code);
+        if (ret == -1) break;
+    }
+    lirc_freeconfig (config);
 
     lirc_deinit ();
     return true;
