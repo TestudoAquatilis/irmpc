@@ -8,9 +8,16 @@
 
 static struct mpd_connection *connection = NULL;
 
-static bool connection_init ()
+static bool connection_check ()
 {
-    if (connection != NULL) return true;
+    /* check state */
+    if (connection != NULL) {
+        if (mpd_connection_get_error (connection) == MPD_ERROR_CLOSED) {
+            irmpc_mpd_free ();
+        } else {
+            return true;
+        }
+    }
 
     if (irmpc_options.debug) {
         printf ("INFO: trying to connect to %s:%d\n", irmpc_options.mpd_hostname, irmpc_options.mpd_port);
@@ -47,9 +54,9 @@ static bool connection_init ()
 
 void irmpc_mpd_command (const char *command)
 {
-    if (! connection_init ()) return;
+    if (! connection_check ()) return;
 
-    if (strcmp (command, "toggle") == 0) {
+    if (strcmp (command, "playpause") == 0) {
         /* toggle play/pause */
         struct mpd_status *status = mpd_run_status (connection);
 
@@ -71,6 +78,12 @@ void irmpc_mpd_command (const char *command)
         }
 
         mpd_status_free (status);
+    } else if (strcmp (command, "next") == 0) {
+        mpd_run_next (connection);
+    } else if (strcmp (command, "prev") == 0) {
+        mpd_run_previous (connection);
+    } else if (strcmp (command, "stop") == 0) {
+        mpd_run_stop (connection);
     }
 
 }
