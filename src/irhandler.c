@@ -1,5 +1,6 @@
 #include "irhandler.h"
 #include "options.h"
+#include "mpd.h"
 
 #ifndef DEBUG_NO_LIRC
 #include <lirc/lirc_client.h>
@@ -23,7 +24,7 @@ bool irmpc_irhandler ()
         goto irmpc_irhandler_error_exit;
     }
 
-    // main loop
+    /* main loop */
     char *code;
 
     while (lirc_nextcode (&code) == 0) {
@@ -42,7 +43,18 @@ bool irmpc_irhandler ()
                 printf ("Got command: \"%s\"\n", c);
             }
 
-            // TODO: mpd controlling
+            if ((c[0] == 'm') && (c[1] == ':')) {
+                /* mpd command */
+                irmpc_mpd_command (&(c[2]));
+            } else if ((c[0] == 'v') && (c[1] == ':')) {
+                /* volume command */
+            } else if ((c[0] == 's') && (c[1] == ':')) {
+                /* system command */
+            } else if ((c[0] == 'p') && (c[1] == ':')) {
+                /* playlist command */
+            }
+
+            /* TODO: mpd controlling */
 #ifdef DEBUG_NO_LIRC
         }
         return true;

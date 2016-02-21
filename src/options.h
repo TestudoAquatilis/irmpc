@@ -8,7 +8,7 @@ struct _irmpc_options {
 
     char *mpd_hostname;
     char *mpd_password;
-    int  mpd_port;
+    unsigned int mpd_port;
 
     char *lirc_config;
 
