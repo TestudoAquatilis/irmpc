@@ -8,6 +8,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 bool irmpc_irhandler ()
 {
@@ -43,6 +44,11 @@ bool irmpc_irhandler ()
                 printf ("Got command: \"%s\"\n", c);
             }
 
+            if (strlen (c) < 3) {
+                fprintf (stderr, "WARNING: ignoring command \"%s\" - too short.\n", c);
+                continue;
+            }
+
             if ((c[0] == 'm') && (c[1] == ':')) {
                 /* mpd command */
                 irmpc_mpd_command (&(c[2]));
@@ -52,6 +58,10 @@ bool irmpc_irhandler ()
                 /* system command */
             } else if ((c[0] == 'p') && (c[1] == ':')) {
                 /* playlist command */
+                int number = c[2] - '0';
+                if ((number >= 0) && (number <= 9)) {
+                    irmpc_mpd_playlist_num (number);
+                }
             }
 
             /* TODO: mpd controlling */
