@@ -4,19 +4,22 @@
 #include <stdbool.h>
 
 struct _irmpc_options {
-    char        *config_file;
+    const char  *config_file;
 
-    char        *mpd_hostname;
-    char        *mpd_password;
+    const char  *mpd_hostname;
+    const char  *mpd_password;
     unsigned int mpd_port;
     unsigned int mpd_maxtries;
 
     unsigned int volume_step;
 
-    char        *lirc_config;
-    int          lirc_key_timespan;
+    const char  *lirc_config;
+    unsigned int lirc_key_timespan;
 
-    char        *progname;
+    const char  *power_command;
+    unsigned int power_amount;
+
+    const char  *progname;
 
     bool         verbose;
     bool         debug;

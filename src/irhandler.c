@@ -9,6 +9,47 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
+
+
+static int    power_last_press = -1;
+static time_t power_last_time;
+
+static void system_handler (const char *command)
+{
+    if (strcmp (command, "poweroff") == 0) {
+        time_t this_time = time (NULL);
+
+        int power_press = 1;
+
+        if (power_last_press >= 0) {
+            double timediff = difftime (this_time, power_last_time);
+            if (irmpc_options.debug) {
+                printf ("INFO: timediff to last press: %fs\n", timediff);
+            }
+            if (timediff <= irmpc_options.lirc_key_timespan) {
+                power_press += power_last_press;
+            }
+        }
+
+        if (power_press >= irmpc_options.power_amount) {
+            if (irmpc_options.power_command != NULL) {
+                if (irmpc_options.debug) {
+                    printf ("INFO: executing poweroff command: %s\n", irmpc_options.power_command);
+                }
+
+                /* TODO: exec command */
+            } else {
+                fprintf (stderr, "WARNING: no poweroff command specified\n");
+            }
+
+            power_press = 0;
+        }
+
+        power_last_press = power_press;
+        power_last_time  = time (NULL);
+    }
+}
 
 bool irmpc_irhandler ()
 {
@@ -57,7 +98,7 @@ bool irmpc_irhandler ()
                 irmpc_mpd_volume (&(c[2]));
             } else if ((c[0] == 's') && (c[1] == ':')) {
                 /* system command */
-                /* TODO */
+                system_handler (&(c[2]));
             } else if ((c[0] == 'p') && (c[1] == ':')) {
                 /* playlist command */
                 int number = c[2] - '0';

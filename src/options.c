@@ -15,12 +15,14 @@ struct _irmpc_options irmpc_options = {
     .volume_step       = 2,
     .lirc_config       = NULL,
     .lirc_key_timespan = 2,
+    .power_command     = NULL,
+    .power_amount      = 2,
     .progname          = "irmpc",
     .verbose           = false,
     .debug             = false
 };
 
-/* TODO: add option parsers for maxtries, volume_step, timespan */
+/* TODO: add option parsers for maxtries, volume_step, timespan, power_command, power_amount */
 
 static GOptionEntry option_entries[] = {
     {"config",     'c', 0, G_OPTION_ARG_FILENAME, &(irmpc_options.config_file),  "Configuration file",                   "filename"},

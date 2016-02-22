@@ -135,7 +135,7 @@ void irmpc_mpd_playlist_num (int number)
     if (playlist_num_last > 0) {
         double timediff = difftime (this_time, playlist_num_last_time);
         if (irmpc_options.debug) {
-            printf ("timediff to last key: %fs\n", timediff);
+            printf ("INFO: timediff to last key: %fs\n", timediff);
         }
         if (timediff <= irmpc_options.lirc_key_timespan) {
             number = playlist_num_last * 10 + number;
