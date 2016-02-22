@@ -97,6 +97,32 @@ void irmpc_mpd_command (const char *command)
     }
 }
 
+void irmpc_mpd_playlist (const struct playlist_info *playlist)
+{
+    bool success = false;
+    int  tries   = 0;
+    while ((!success) && (tries < irmpc_options.mpd_maxtries)) {
+        tries++;
+
+        if (! connection_check ()) continue;
+
+        success = mpd_run_stop (connection);
+        if (!success) continue;
+
+        success = mpd_run_clear (connection);
+        if (!success) continue;
+
+        success = mpd_run_load (connection, playlist->name);
+        if (!success) continue;
+
+        success = mpd_run_random (connection, playlist->random);
+        if (!success) continue;
+
+        success = mpd_run_play (connection);
+        if (!success) continue;
+    }
+}
+
 static int    playlist_num_last = -1;
 static time_t playlist_num_last_time;
 
@@ -124,7 +150,7 @@ void irmpc_mpd_playlist_num (int number)
             printf ("playlist: %s - random: %d\n", playlist->name, playlist->random);
         }
 
-        // TODO: select
+        irmpc_mpd_playlist (playlist);
     }
 
     playlist_num_last = number;
