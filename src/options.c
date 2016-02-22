@@ -12,6 +12,7 @@ struct _irmpc_options irmpc_options = {
     .mpd_password      = NULL,
     .mpd_port          = 6600,
     .mpd_maxtries      = 2,
+    .volume_step       = 2,
     .lirc_config       = NULL,
     .lirc_key_timespan = 2,
     .progname          = "irmpc",
@@ -19,7 +20,7 @@ struct _irmpc_options irmpc_options = {
     .debug             = false
 };
 
-// TODO: add option parsers for maxtries
+/* TODO: add option parsers for maxtries, volume_step, timespan */
 
 static GOptionEntry option_entries[] = {
     {"config",     'c', 0, G_OPTION_ARG_FILENAME, &(irmpc_options.config_file),  "Configuration file",                   "filename"},

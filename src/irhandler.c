@@ -54,8 +54,10 @@ bool irmpc_irhandler ()
                 irmpc_mpd_command (&(c[2]));
             } else if ((c[0] == 'v') && (c[1] == ':')) {
                 /* volume command */
+                irmpc_mpd_volume (&(c[2]));
             } else if ((c[0] == 's') && (c[1] == ':')) {
                 /* system command */
+                /* TODO */
             } else if ((c[0] == 'p') && (c[1] == ':')) {
                 /* playlist command */
                 int number = c[2] - '0';
@@ -64,7 +66,6 @@ bool irmpc_irhandler ()
                 }
             }
 
-            /* TODO: mpd controlling */
 #ifdef DEBUG_NO_LIRC
         }
         return true;

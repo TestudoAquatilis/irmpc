@@ -11,6 +11,8 @@ struct _irmpc_options {
     unsigned int mpd_port;
     unsigned int mpd_maxtries;
 
+    unsigned int volume_step;
+
     char        *lirc_config;
     int          lirc_key_timespan;
 
