@@ -1,5 +1,6 @@
 #include "mpd.h"
 #include "options.h"
+#include "playlist.h"
 
 #include <stdio.h>
 #include <string.h>
@@ -113,8 +114,17 @@ void irmpc_mpd_playlist_num (int number)
         }
     }
 
+    const struct playlist_info * playlist = irmpc_playlist_get (number);
     if (irmpc_options.debug) {
         printf ("number chosen: %d\n", number);
+    }
+
+    if (playlist != NULL) {
+        if (irmpc_options.debug) {
+            printf ("playlist: %s - random: %d\n", playlist->name, playlist->random);
+        }
+
+        // TODO: select
     }
 
     playlist_num_last = number;

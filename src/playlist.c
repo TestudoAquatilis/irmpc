@@ -4,11 +4,6 @@
 #include <stdlib.h>
 #include <glib.h>
 
-struct playlist_info {
-    char *name;
-    bool random;
-};
-
 static GTree        *playlist_table        = NULL;
 static GStringChunk *playlist_name_storage = NULL;
 
@@ -47,6 +42,15 @@ void irmpc_playlist_add (unsigned int number, const char *name, bool random)
     entry->random = random;
 
     g_tree_insert (playlist_table, GINT_TO_POINTER(number), entry);
+}
+
+const struct playlist_info * irmpc_playlist_get (unsigned int number)
+{
+    if (playlist_table == NULL) return NULL;
+
+    gpointer result = g_tree_lookup (playlist_table, GINT_TO_POINTER (number));
+
+    return (struct playlist_info *) result;
 }
 
 static gboolean playlist_entry_free (gpointer key, gpointer value, gpointer data)
