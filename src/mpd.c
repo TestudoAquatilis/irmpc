@@ -58,14 +58,29 @@ void irmpc_mpd_command (const char *command)
 {
     bool success = false;
     int  tries   = 0;
+    bool need_status = false;
+
+    /* commands needing status */
+    if (strcmp (command, "playpause") == 0) {
+        need_status = true;
+    } else if (strcmp (command, "delete") == 0) {
+        need_status = true;
+    } else if (strcmp (command, "nextalbum") == 0) {
+        need_status = true;
+    } else if (strcmp (command, "prevalbum") == 0) {
+        need_status = true;
+    }
+
     while ((!success) && (tries < irmpc_options.mpd_maxtries)) {
         tries++;
 
         if (! connection_check ()) continue;
 
-        if (strcmp (command, "playpause") == 0) {
-            /* toggle play/pause */
-            struct mpd_status *status = mpd_run_status (connection);
+        struct mpd_status *status = NULL;
+        /* get status if needed */
+
+        if (need_status) {
+            status = mpd_run_status (connection);
 
             if (status == NULL) {
                 if (mpd_connection_get_error (connection) != MPD_ERROR_SUCCESS) {
@@ -75,7 +90,10 @@ void irmpc_mpd_command (const char *command)
                 }
                 continue;
             }
+        }
 
+        if (strcmp (command, "playpause") == 0) {
+            /* toggle play/pause */
             if (mpd_status_get_state (status) == MPD_STATE_PLAY) {
                 /* pause */
                 success = mpd_run_pause (connection, true);
@@ -83,8 +101,6 @@ void irmpc_mpd_command (const char *command)
                 /* play */
                 success = mpd_run_play (connection);
             }
-
-            mpd_status_free (status);
         } else if (strcmp (command, "next") == 0) {
             success = mpd_run_next (connection);
         } else if (strcmp (command, "prev") == 0) {
@@ -92,17 +108,6 @@ void irmpc_mpd_command (const char *command)
         } else if (strcmp (command, "stop") == 0) {
             success = mpd_run_stop (connection);
         } else if (strcmp (command, "delete") == 0) {
-            struct mpd_status *status = mpd_run_status (connection);
-
-            if (status == NULL) {
-                if (mpd_connection_get_error (connection) != MPD_ERROR_SUCCESS) {
-                    fprintf (stderr, "ERROR obtaining mpd status: %s\n", mpd_connection_get_error_message (connection));
-                } else {
-                    fprintf (stderr, "ERROR obtaining mpd status:\n");
-                }
-                continue;
-            }
-
             if ((mpd_status_get_state (status) == MPD_STATE_PLAY) || (mpd_status_get_state (status) == MPD_STATE_PAUSE)) {
                 int songpos = mpd_status_get_song_pos (status);
 
@@ -114,10 +119,80 @@ void irmpc_mpd_command (const char *command)
             } else {
                 success = true;
             }
+        } else if ((strcmp (command, "nextalbum") == 0) || (strcmp (command, "prevalbum") == 0)) {
+            int queuelen = mpd_status_get_queue_length (status);
+            int songpos  = mpd_status_get_song_pos (status);
 
-            mpd_status_free (status);
+            int searchdir = ((strcmp (command, "nextalbum") == 0) ? 1 : -1);
+            if (searchdir < 0) songpos--;
+
+            if ((queuelen > 0) && (songpos >= 0)) {
+                struct mpd_song *current_song = mpd_run_get_queue_song_pos (connection, songpos);
+
+                if (current_song != NULL) {
+                    const char *current_album = mpd_song_get_tag (current_song, MPD_TAG_ALBUM, 0);
+
+                    if (irmpc_options.debug) {
+                        printf ("INFO: song pos: %d - current album: %s, queue length: %d, search direction: %d\n", songpos, current_album, queuelen, searchdir);
+                    }
+
+                    int next_songpos;
+                    bool album_found = false;
+
+                    for (next_songpos = songpos; (next_songpos >= 0) && (next_songpos < queuelen); next_songpos += searchdir) {
+                        struct mpd_song *this_song = mpd_run_get_queue_song_pos (connection, next_songpos);
+                        if (this_song == NULL) continue;
+                        const char *this_album = mpd_song_get_tag (this_song, MPD_TAG_ALBUM, 0);
+
+                        if ((this_album == NULL) || (current_album == NULL)) {
+                            /* one with album tag and one without -> "found" */
+                            album_found = true;
+                        } else {
+                            if (strcmp (this_album, current_album) != 0) {
+                                album_found = true;
+                            }
+                        }
+
+                        if (irmpc_options.debug) {
+                            printf ("INFO: song pos: %d - album: %s - found: %d\n", next_songpos, this_album, album_found);
+                        }
+
+                        mpd_song_free (this_song);
+                        if (album_found) break;
+                    }
+
+                    mpd_song_free (current_song);
+
+                    if (searchdir < 0) {
+                        if (!album_found) {
+                            album_found  = true;
+                            next_songpos = 0;
+                        } else {
+                            next_songpos++;
+                        }
+                    }
+
+                    if (irmpc_options.debug) {
+                        printf ("INFO: target found: %d, target song pos: %d\n", album_found, next_songpos);
+                    }
+
+                    if (album_found) {
+                        success = mpd_run_play_pos (connection, next_songpos);
+                    } else {
+                        success = true;
+                    }
+                }
+            } else {
+                success = true;
+            }
+
+
         } else {
-            break;
+            success = true;
+        }
+
+        if (status != NULL) {
+            mpd_status_free (status);
         }
     }
 }
