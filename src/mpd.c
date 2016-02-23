@@ -76,7 +76,7 @@ void irmpc_mpd_command (const char *command)
                 continue;
             }
 
-            if (mpd_status_get_state(status) == MPD_STATE_PLAY) {
+            if (mpd_status_get_state (status) == MPD_STATE_PLAY) {
                 /* pause */
                 success = mpd_run_pause (connection, true);
             } else {
@@ -92,7 +92,30 @@ void irmpc_mpd_command (const char *command)
         } else if (strcmp (command, "stop") == 0) {
             success = mpd_run_stop (connection);
         } else if (strcmp (command, "delete") == 0) {
-            /* TODO */
+            struct mpd_status *status = mpd_run_status (connection);
+
+            if (status == NULL) {
+                if (mpd_connection_get_error (connection) != MPD_ERROR_SUCCESS) {
+                    fprintf (stderr, "ERROR obtaining mpd status: %s\n", mpd_connection_get_error_message (connection));
+                } else {
+                    fprintf (stderr, "ERROR obtaining mpd status:\n");
+                }
+                continue;
+            }
+
+            if ((mpd_status_get_state (status) == MPD_STATE_PLAY) || (mpd_status_get_state (status) == MPD_STATE_PAUSE)) {
+                int songpos = mpd_status_get_song_pos (status);
+
+                if (irmpc_options.debug) {
+                    printf ("deleting song at songpos: %d\n", songpos+1);
+                }
+
+                success = mpd_run_delete (connection, songpos);
+            } else {
+                success = true;
+            }
+
+            mpd_status_free (status);
         } else {
             break;
         }
