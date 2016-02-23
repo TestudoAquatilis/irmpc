@@ -5,10 +5,10 @@ LDFLAGS=$(OPTFLAGS)
 
 LIBS=glib-2.0 libmpdclient
 
-#CFLAGS+=$(shell pkg-config --cflags $(LIBS))
-#LDFLAGS+=$(shell pkg-config --libs $(LIBS)) -llirc_client
-CFLAGS+=$(shell pkg-config --cflags $(LIBS)) -DDEBUG_NO_LIRC
-LDFLAGS+=$(shell pkg-config --libs $(LIBS))
+CFLAGS+=$(shell pkg-config --cflags $(LIBS))
+LDFLAGS+=$(shell pkg-config --libs $(LIBS)) -llirc_client
+#CFLAGS+=$(shell pkg-config --cflags $(LIBS)) -DDEBUG_NO_LIRC
+#LDFLAGS+=$(shell pkg-config --libs $(LIBS))
 
 SOURCES=playlist.c options.c irhandler.c mpd.c main.c
 EXECUTABLE=irmpc
