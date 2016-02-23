@@ -38,7 +38,9 @@ static void system_handler (const char *command)
                     printf ("INFO: executing poweroff command: %s\n", irmpc_options.power_command);
                 }
 
-                /* TODO: exec command */
+                /* stop on poweroff */
+                irmpc_mpd_command ("stop");
+                system (irmpc_options.power_command);
             } else {
                 fprintf (stderr, "WARNING: no poweroff command specified\n");
             }
