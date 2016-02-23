@@ -8,7 +8,7 @@
 
 struct _irmpc_options irmpc_options = {
     .config_file       = NULL,
-    .mpd_hostname      = NULL,
+    .mpd_hostname      = "localhost",
     .mpd_password      = NULL,
     .mpd_port          = 6600,
     .mpd_maxtries      = 2,
@@ -22,16 +22,39 @@ struct _irmpc_options irmpc_options = {
     .debug             = false
 };
 
-/* TODO: add option parsers for maxtries, volume_step, timespan, power_command, power_amount */
+struct option_file_data {
+    const gchar *group_name;
+    const gchar *key_name;
+    GOptionArg   arg;
+    gpointer     arg_data;
+};
 
-static GOptionEntry option_entries[] = {
-    {"config",     'c', 0, G_OPTION_ARG_FILENAME, &(irmpc_options.config_file),  "Configuration file",                   "filename"},
-    {"hostname",   'H', 0, G_OPTION_ARG_STRING,   &(irmpc_options.mpd_hostname), "Hostname of host running mpd",         "host"},
-    {"password",   'p', 0, G_OPTION_ARG_STRING,   &(irmpc_options.mpd_password), "Password of mpd",                      "password"},
-    {"port",       'P', 0, G_OPTION_ARG_INT,      &(irmpc_options.mpd_password), "Port of mpd - default: port=6600",     "port"},
-    {"lircconfig", 'l', 0, G_OPTION_ARG_FILENAME, &(irmpc_options.lirc_config),  "Configuration file for lirc commands", "filename"},
-    {"verbose",    'v', 0, 0,                     &(irmpc_options.verbose),      "Set to verbose",                       NULL},
-    {"debug",      'd', 0, 0,                     &(irmpc_options.debug),        "Activate debug output",                NULL},
+static GOptionEntry option_entries [] = {
+    {"config",      'c', 0, G_OPTION_ARG_FILENAME, &(irmpc_options.config_file),       "Configuration file",                                            "filename"},
+    {"hostname",    'H', 0, G_OPTION_ARG_STRING,   &(irmpc_options.mpd_hostname),      "Hostname of host running mpd - default: localhost",             "host"},
+    {"password",    'p', 0, G_OPTION_ARG_STRING,   &(irmpc_options.mpd_password),      "Password of mpd",                                               "password"},
+    {"port",        'P', 0, G_OPTION_ARG_INT,      &(irmpc_options.mpd_port),          "Port of mpd - default: port=6600",                              "port"},
+    {"maxtries",    'm', 0, G_OPTION_ARG_INT,      &(irmpc_options.mpd_maxtries),      "Maximum tries for sending mpd commands",                        "n"},
+    {"volumestep",  's', 0, G_OPTION_ARG_INT,      &(irmpc_options.volume_step),       "Step in percent for volume up/down",                            "step"},
+    {"lircconfig",  'l', 0, G_OPTION_ARG_FILENAME, &(irmpc_options.lirc_config),       "Configuration file for lirc commands",                          "filename"},
+    {"keytimespan", 't', 0, G_OPTION_ARG_INT,      &(irmpc_options.lirc_key_timespan), "Maximum time in seconds between keys of multiple key commands", "span"},
+    {"powercmd",    'C', 0, G_OPTION_ARG_STRING,   &(irmpc_options.power_command),     "System command to execute when poweroff button is pressed",     "command"},
+    {"powerrepeat", 'r', 0, G_OPTION_ARG_INT,      &(irmpc_options.power_amount),      "Amount of times power button needs to be pressed",              "amount"},
+    {"verbose",     'v', 0, 0,                     &(irmpc_options.verbose),           "Set to verbose",                                                NULL},
+    {"debug",       'd', 0, 0,                     &(irmpc_options.debug),             "Activate debug output",                                         NULL},
+    {NULL}
+};
+
+static struct option_file_data cfg_file_entries [] = {
+    {"mpd",    "hostname",    G_OPTION_ARG_STRING,   &(irmpc_options.mpd_hostname)},
+    {"mpd",    "password",    G_OPTION_ARG_STRING,   &(irmpc_options.mpd_password)},
+    {"mpd",    "port",        G_OPTION_ARG_INT,      &(irmpc_options.mpd_port)},
+    {"mpd",    "maxtries",    G_OPTION_ARG_INT,      &(irmpc_options.mpd_maxtries)},
+    {"mpd",    "volumestep",  G_OPTION_ARG_INT,      &(irmpc_options.volume_step)},
+    {"lirc",   "lircconfig",  G_OPTION_ARG_FILENAME, &(irmpc_options.lirc_config)},
+    {"lirc",   "keytimespan", G_OPTION_ARG_INT,      &(irmpc_options.lirc_key_timespan)},
+    {"system", "powercmd",    G_OPTION_ARG_STRING,   &(irmpc_options.power_command)},
+    {"system", "powerrepeat", G_OPTION_ARG_INT,      &(irmpc_options.power_amount)},
     {NULL}
 };
 
@@ -47,30 +70,34 @@ static bool options_from_file ()
     }
     
     /* try finding options */
-    gchar *tempstr;
-    gint   tempint;
-
-    tempstr = g_key_file_get_string (key_file, "mpd", "hostname", &error);
-    if (tempstr != NULL) {irmpc_options.mpd_hostname = tempstr;}
-
-    tempstr = g_key_file_get_string (key_file, "mpd", "password", &error);
-    if (tempstr != NULL) {irmpc_options.mpd_password = tempstr;}
-
-    tempint = g_key_file_get_integer (key_file, "mpd", "port", &error);
-    if (error == NULL) {
-        irmpc_options.mpd_port = tempint;
-    } else {
-        if (error->code != G_KEY_FILE_ERROR_KEY_NOT_FOUND) {
-            g_key_file_free (key_file);
-            fprintf (stderr, "Error parsing config file %s: %s\n", irmpc_options.config_file, error->message);
-            g_error_free (error);
-            return false;
+    for (struct option_file_data *entry = &(cfg_file_entries[0]); entry->group_name != NULL; entry++) {
+        g_clear_error (&error);
+        if (entry->arg == G_OPTION_ARG_INT) {
+            gint   tempint;
+            tempint = g_key_file_get_integer (key_file, entry->group_name, entry->key_name, &error);
+            if (error == NULL) {
+                int *targetint = (int *) entry->arg_data;
+                *targetint = tempint;
+            } else {
+                if ((error->code != G_KEY_FILE_ERROR_GROUP_NOT_FOUND) && (error->code != G_KEY_FILE_ERROR_KEY_NOT_FOUND)) {
+                    g_key_file_free (key_file);
+                    fprintf (stderr, "Error parsing config file %s: %s\n", irmpc_options.config_file, error->message);
+                    g_error_free (error);
+                    return false;
+                }
+            }
+        } else if ((entry->arg == G_OPTION_ARG_STRING) || (entry->arg == G_OPTION_ARG_FILENAME)) {
+            gchar *tempstr;
+            tempstr = g_key_file_get_string (key_file, entry->group_name, entry->key_name, &error);
+            if (irmpc_options.debug) {
+                printf ("INFO: parsed string %s for option %s\n", tempstr, entry->key_name);
+            }
+            if (tempstr != NULL) {
+                gchar **targetstr = (gchar **) entry->arg_data;
+                *targetstr = tempstr;
+            }
         }
     }
-
-    tempstr = g_key_file_get_string (key_file, "lirc", "config-file", &error);
-    if (tempstr != NULL) {irmpc_options.lirc_config = tempstr;}
-
 
     /* playlists */
     gchar **tempstrlist;
@@ -78,6 +105,7 @@ static bool options_from_file ()
     tempstrlist = g_key_file_get_keys (key_file, "playlists", &listlen, &error);
     if (tempstrlist != NULL) {
         for (int i = 0; i < listlen; i++) {
+            g_clear_error (&error);
             char *number_str = tempstrlist[i];
             char *endptr;
             long int number = strtol(number_str, &endptr, 10);
@@ -131,7 +159,7 @@ static bool options_check ()
             printf ("hostname: %s\n", irmpc_options.mpd_hostname);
         }
     }
-    if ((irmpc_options.mpd_port < 0) || (irmpc_options.mpd_port >= (1 << 16))) {
+    if (irmpc_options.mpd_port >= (1 << 16)) {
         fprintf (stderr, "ERROR: port needs to be in range 0 ... %d\n", (1 << 16));
         return false;
     } else {
@@ -144,13 +172,32 @@ static bool options_check ()
             printf ("password: %s\n", irmpc_options.mpd_password);
         }
     }
-    if (irmpc_options.lirc_config == NULL) {
-        fprintf (stderr, "ERROR: no lirc configuration file specified\n");
+    if (irmpc_options.debug) {
+        printf ("mpd-maxtries: %d\n", irmpc_options.mpd_maxtries);
+    }
+    if (irmpc_options.volume_step > 100) {
+        fprintf (stderr, "ERROR: volume step needs to be in range 0 ... 100\n");
         return false;
     } else {
         if (irmpc_options.debug) {
+            printf ("volume-step: %d\n", irmpc_options.volume_step);
+        }
+    }
+    if (irmpc_options.lirc_config != NULL) {
+        if (irmpc_options.debug) {
             printf ("lirc configuration: %s\n", irmpc_options.lirc_config);
         }
+    }
+    if (irmpc_options.debug) {
+        printf ("lirc keytimespan: %d\n", irmpc_options.lirc_key_timespan);
+    }
+    if (irmpc_options.power_command != NULL) {
+        if (irmpc_options.debug) {
+            printf ("poweroff system command: %s\n", irmpc_options.power_command);
+        }
+    }
+    if (irmpc_options.debug) {
+        printf ("powerkey repetitions: %d\n", irmpc_options.power_amount);
     }
 
     if (irmpc_options.debug) {
