@@ -81,7 +81,7 @@ bool irmpc_irhandler ()
 #else
         char c [1024];
         while (true) {
-            scanf("%s", c);
+            scanf ("%s", c);
 #endif
             if (irmpc_options.debug) {
                 printf ("Got command: \"%s\"\n", c);

@@ -108,7 +108,7 @@ static bool options_from_file ()
             g_clear_error (&error);
             char *number_str = tempstrlist[i];
             char *endptr;
-            long int number = strtol(number_str, &endptr, 10);
+            long int number = strtol (number_str, &endptr, 10);
             if ((*number_str == '\0') || (*endptr != '\0') || (number < 0)) continue;
 
             gsize entrylen;
