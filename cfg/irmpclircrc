@@ -1,0 +1,114 @@
+begin
+    prog = irmpc
+    button = KEY_PLAYPAUSE
+    config = m:playpause
+end
+begin
+    prog = irmpc
+    button = KEY_STOP
+    config = m:stop
+end
+begin
+    prog = irmpc
+    button = KEY_PREV
+    config = m:prev
+end
+begin
+    prog = irmpc
+    button = KEY_NEXT
+    config = m:next
+end
+begin
+    prog = irmpc
+    button = KEY_RIGHT
+    config = m:nextalbum
+end
+begin
+    prog = irmpc
+    button = KEY_LEFT
+    config = m:prevalbum
+end
+
+begin
+    prog = irmpc
+    button = KEY_POWER
+    config = s:poweroff
+end
+
+begin
+    prog = irmpc
+    button = KEY_VOLUMEUP
+    config = v:up
+end
+begin
+    prog = irmpc
+    button = KEY_VOLUMEDOWN
+    config = v:down
+end
+begin
+    prog = irmpc
+    button = KEY_MUTE
+    config = v:mute
+end
+
+begin
+    prog = irmpc
+    button = KEY_DELETE
+    config = m:delete
+end
+begin
+    prog = irmpc
+    button = KEY_UPDATE
+    config = m:playlistupdate
+end
+
+begin
+    prog = irmpc
+    button = KEY_0
+    config = p:0
+end
+begin
+    prog = irmpc
+    button = KEY_1
+    config = p:1
+end
+begin
+    prog = irmpc
+    button = KEY_2
+    config = p:2
+end
+begin
+    prog = irmpc
+    button = KEY_3
+    config = p:3
+end
+begin
+    prog = irmpc
+    button = KEY_4
+    config = p:4
+end
+begin
+    prog = irmpc
+    button = KEY_5
+    config = p:5
+end
+begin
+    prog = irmpc
+    button = KEY_6
+    config = p:6
+end
+begin
+    prog = irmpc
+    button = KEY_7
+    config = p:7
+end
+begin
+    prog = irmpc
+    button = KEY_8
+    config = p:8
+end
+begin
+    prog = irmpc
+    button = KEY_9
+    config = p:9
+end
