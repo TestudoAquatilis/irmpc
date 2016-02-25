@@ -7,7 +7,7 @@
 static GTree        *playlist_table        = NULL;
 static GStringChunk *playlist_name_storage = NULL;
 
-static gint playlist_table_cmp_func (gconstpointer a, gconstpointer b)
+static gint irmpc_playlist_table_cmp_func (gconstpointer a, gconstpointer b)
 {
     unsigned int aval = GPOINTER_TO_INT(a);
     unsigned int bval = GPOINTER_TO_INT(b);
@@ -29,7 +29,7 @@ void irmpc_playlist_add (unsigned int number, const char *name, bool random)
     gchar *entry_name = g_string_chunk_insert (playlist_name_storage, name);
 
     if (playlist_table == NULL) {
-        playlist_table = g_tree_new (playlist_table_cmp_func);
+        playlist_table = g_tree_new (irmpc_playlist_table_cmp_func);
         if (playlist_table == NULL) return;
     }
 
@@ -53,7 +53,7 @@ const struct playlist_info * irmpc_playlist_get (unsigned int number)
     return (struct playlist_info *) result;
 }
 
-static gboolean playlist_entry_free (gpointer key, gpointer value, gpointer data)
+static gboolean irmpc_playlist_entry_free (gpointer key, gpointer value, gpointer data)
 {
     if (value == NULL) return false;
     free (value);
@@ -63,7 +63,7 @@ static gboolean playlist_entry_free (gpointer key, gpointer value, gpointer data
 void irmpc_playlist_free ()
 {
     if (playlist_table != NULL) {
-        g_tree_foreach (playlist_table, playlist_entry_free, NULL);
+        g_tree_foreach (playlist_table, irmpc_playlist_entry_free, NULL);
         g_tree_destroy (playlist_table);
         playlist_table = NULL;
     }
@@ -74,7 +74,7 @@ void irmpc_playlist_free ()
     }
 }
 
-static gboolean playlist_entry_print_debug (gpointer key, gpointer value, gpointer data)
+static gboolean irmpc_playlist_entry_print_debug (gpointer key, gpointer value, gpointer data)
 {
     unsigned int number = GPOINTER_TO_INT(key);
     struct playlist_info *entry = (struct playlist_info *) value;
@@ -90,7 +90,7 @@ void irmpc_playlist_print_debug ()
 {
     if (playlist_table != NULL) {
         fprintf (stderr, "playlist:\n");
-        g_tree_foreach (playlist_table, playlist_entry_print_debug, NULL);
+        g_tree_foreach (playlist_table, irmpc_playlist_entry_print_debug, NULL);
     } else {
         fprintf (stderr, "playlist empty\n");
     }

@@ -210,7 +210,7 @@ void irmpc_mpd_command (const char *command)
 }
 
 /* name of currently loaded playlist */
-static const char *playlist_current_name = "Test"; // TODO: NULL
+static const char *playlist_current_name = NULL;
 
 /* load given playlist */
 static void irmpc_mpd_playlist (const struct playlist_info *playlist)
