@@ -1,0 +1,11 @@
+[Unit]
+Description=MPD client controlled via LIRC
+After=lircd.service
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/irmpc -c /etc/irmpc/irmpc.cfg
+
+[Install]
+WantedBy=multi-user.target
+
