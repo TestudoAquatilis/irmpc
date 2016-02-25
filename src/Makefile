@@ -1,6 +1,6 @@
 CC=gcc
-OPTFLAGS=-O0
-CFLAGS=-c -ggdb -Wall -std=gnu99 $(OPTFLAGS)
+OPTFLAGS=-O2
+CFLAGS=-c -Wall -std=gnu99 $(OPTFLAGS)
 LDFLAGS=$(OPTFLAGS)
 
 LIBS=glib-2.0 libmpdclient
