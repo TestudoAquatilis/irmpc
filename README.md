@@ -5,6 +5,7 @@ irmpc is an MPD client using commands from infra-red controls via LIRC
 # Requirements
 
 You need
+- libmpdclient
 - lirc-client library
 - glib version 2
 
