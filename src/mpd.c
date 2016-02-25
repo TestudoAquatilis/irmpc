@@ -8,14 +8,22 @@
 #include <time.h>
 
 
+/* update current playlist */
+static void irmpc_mpd_playlist_update ();
+
+
+/* mpd connection */
 static struct mpd_connection *connection = NULL;
 
-static bool connection_check ()
+/* check whether connection is working - try (re)connecting if not */
+static bool irmpc_connection_check ()
 {
-    /* check state */
+    /* check state and clear existing errors */
     if (connection != NULL) {
         if (mpd_connection_get_error (connection) == MPD_ERROR_CLOSED) {
             irmpc_mpd_free ();
+        } else if (mpd_connection_get_error (connection) != MPD_ERROR_SUCCESS) {
+            mpd_connection_clear_error (connection);
         } else {
             return true;
         }
@@ -54,6 +62,7 @@ static bool connection_check ()
     return true;
 }
 
+/* handle simple mpd commands */
 void irmpc_mpd_command (const char *command)
 {
     bool success = false;
@@ -74,7 +83,7 @@ void irmpc_mpd_command (const char *command)
     while ((!success) && (tries < irmpc_options.mpd_maxtries)) {
         tries++;
 
-        if (! connection_check ()) continue;
+        if (! irmpc_connection_check ()) continue;
 
         struct mpd_status *status = NULL;
         /* get status if needed */
@@ -119,6 +128,9 @@ void irmpc_mpd_command (const char *command)
             } else {
                 success = true;
             }
+        } else if (strcmp (command, "playlistupdate") == 0) {
+            irmpc_mpd_playlist_update ();
+            success = true;
         } else if ((strcmp (command, "nextalbum") == 0) || (strcmp (command, "prevalbum") == 0)) {
             int queuelen = mpd_status_get_queue_length (status);
             int songpos  = mpd_status_get_song_pos (status);
@@ -197,14 +209,18 @@ void irmpc_mpd_command (const char *command)
     }
 }
 
-void irmpc_mpd_playlist (const struct playlist_info *playlist)
+/* name of currently loaded playlist */
+static const char *playlist_current_name = "Test"; // TODO: NULL
+
+/* load given playlist */
+static void irmpc_mpd_playlist (const struct playlist_info *playlist)
 {
     bool success = false;
     int  tries   = 0;
     while ((!success) && (tries < irmpc_options.mpd_maxtries)) {
         tries++;
 
-        if (! connection_check ()) continue;
+        if (! irmpc_connection_check ()) continue;
 
         success = mpd_run_stop (connection);
         if (!success) continue;
@@ -221,14 +237,95 @@ void irmpc_mpd_playlist (const struct playlist_info *playlist)
         success = mpd_run_play (connection);
         if (!success) continue;
     }
+
+    if (success) {
+        playlist_current_name = playlist->name;
+    } else {
+        playlist_current_name = NULL;
+    }
 }
 
+/* timestamp for last key press */
+static int    playlist_update_last_press = -1;
+static time_t playlist_update_last_time;
+
+/* update current playlist */
+static void irmpc_mpd_playlist_update ()
+{
+    if (playlist_current_name == NULL) return;
+
+    time_t this_time = time (NULL);
+
+    int playlist_update_press = 1;
+
+    if (playlist_update_last_press >= 0) {
+        double timediff = difftime (this_time, playlist_update_last_time);
+        if (irmpc_options.debug) {
+            printf ("INFO: timediff to last press: %fs\n", timediff);
+        }
+        if (timediff <= irmpc_options.lirc_key_timespan) {
+            playlist_update_press += playlist_update_last_press;
+        }
+    }
+
+    if (playlist_update_press >= irmpc_options.mpd_update_amount) {
+        if (irmpc_options.debug) {
+            printf ("INFO: updating playlist: %s\n", playlist_current_name);
+        }
+
+        bool success = false;
+        int  tries   = 0;
+        while ((!success) && (tries < irmpc_options.mpd_maxtries)) {
+            tries++;
+
+            if (! irmpc_connection_check ()) continue;
+
+            success = mpd_run_save (connection, playlist_current_name);
+            if (!success) {
+                /* playlist might exist - try deleting */
+                if (irmpc_options.debug) {
+                    if (mpd_connection_get_error (connection) != MPD_ERROR_SUCCESS) {
+                        fprintf (stderr, "ERROR: %s\n", mpd_connection_get_error_message (connection));
+                    }
+                    printf ("INFO: playlist %s might exist - trying to delete\n", playlist_current_name);
+                }
+                mpd_connection_clear_error (connection);
+                success = mpd_run_rm (connection, playlist_current_name);
+                if (!success) {
+                    if (irmpc_options.debug) {
+                        if (mpd_connection_get_error (connection) != MPD_ERROR_SUCCESS) {
+                            fprintf (stderr, "ERROR: %s\n", mpd_connection_get_error_message (connection));
+                        }
+                    }
+                    continue;
+                }
+                if (irmpc_options.debug) {
+                    printf ("INFO: second try to save playlist %s\n", playlist_current_name);
+                }
+                success = mpd_run_save (connection, playlist_current_name);
+                if (!success) continue;
+            }
+        }
+
+        playlist_update_press = 0;
+    }
+
+    playlist_update_last_press = playlist_update_press;
+    playlist_update_last_time  = time (NULL);
+}
+
+/* last number entered + timestamp for multi-digit numbers */
 static int    playlist_num_last = -1;
 static time_t playlist_num_last_time;
 
-void irmpc_mpd_playlist_num (int number)
+/* handle number key presses for playlist loading */
+void irmpc_mpd_playlist_key (int key)
 {
     time_t this_time = time (NULL);
+
+    if ((key < 0) || (key > 9)) return;
+
+    unsigned int number = key;
 
     if (playlist_num_last > 0) {
         double timediff = difftime (this_time, playlist_num_last_time);
@@ -257,9 +354,11 @@ void irmpc_mpd_playlist_num (int number)
     playlist_num_last_time = time (NULL);
 }
 
+/* last volume setting for volume/mute */
 static bool last_mute   = false;
 static int  last_volume = 100;
 
+/* volume/mute commands */
 void irmpc_mpd_volume (const char *command)
 {
     bool success = false;
@@ -267,7 +366,7 @@ void irmpc_mpd_volume (const char *command)
     while ((!success) && (tries < irmpc_options.mpd_maxtries)) {
         tries++;
 
-        if (! connection_check ()) continue;
+        if (! irmpc_connection_check ()) continue;
 
         struct mpd_status *status = mpd_run_status (connection);
 
@@ -332,6 +431,7 @@ void irmpc_mpd_volume (const char *command)
 }
 
 
+/* free connection struct */
 void irmpc_mpd_free () {
     if (connection != NULL) {
         mpd_connection_free (connection);

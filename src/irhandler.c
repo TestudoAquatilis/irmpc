@@ -105,7 +105,7 @@ bool irmpc_irhandler ()
                 /* playlist command */
                 int number = c[2] - '0';
                 if ((number >= 0) && (number <= 9)) {
-                    irmpc_mpd_playlist_num (number);
+                    irmpc_mpd_playlist_key (number);
                 }
             }
 

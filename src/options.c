@@ -12,6 +12,7 @@ struct _irmpc_options irmpc_options = {
     .mpd_password      = NULL,
     .mpd_port          = 6600,
     .mpd_maxtries      = 2,
+    .mpd_update_amount = 2,
     .volume_step       = 2,
     .lirc_config       = NULL,
     .lirc_key_timespan = 2,
@@ -30,35 +31,37 @@ struct option_file_data {
 };
 
 static GOptionEntry option_entries [] = {
-    {"config",      'c', 0, G_OPTION_ARG_FILENAME, &(irmpc_options.config_file),       "Configuration file",                                            "filename"},
-    {"hostname",    'H', 0, G_OPTION_ARG_STRING,   &(irmpc_options.mpd_hostname),      "Hostname of host running mpd - default: localhost",             "host"},
-    {"password",    'p', 0, G_OPTION_ARG_STRING,   &(irmpc_options.mpd_password),      "Password of mpd",                                               "password"},
-    {"port",        'P', 0, G_OPTION_ARG_INT,      &(irmpc_options.mpd_port),          "Port of mpd - default: port=6600",                              "port"},
-    {"maxtries",    'm', 0, G_OPTION_ARG_INT,      &(irmpc_options.mpd_maxtries),      "Maximum tries for sending mpd commands",                        "n"},
-    {"volumestep",  's', 0, G_OPTION_ARG_INT,      &(irmpc_options.volume_step),       "Step in percent for volume up/down",                            "step"},
-    {"lircconfig",  'l', 0, G_OPTION_ARG_FILENAME, &(irmpc_options.lirc_config),       "Configuration file for lirc commands",                          "filename"},
-    {"keytimespan", 't', 0, G_OPTION_ARG_INT,      &(irmpc_options.lirc_key_timespan), "Maximum time in seconds between keys of multiple key commands", "span"},
-    {"powercmd",    'C', 0, G_OPTION_ARG_STRING,   &(irmpc_options.power_command),     "System command to execute when poweroff button is pressed",     "command"},
-    {"powerrepeat", 'r', 0, G_OPTION_ARG_INT,      &(irmpc_options.power_amount),      "Amount of times power button needs to be pressed",              "amount"},
-    {"verbose",     'v', 0, 0,                     &(irmpc_options.verbose),           "Set to verbose",                                                NULL},
-    {"debug",       'd', 0, 0,                     &(irmpc_options.debug),             "Activate debug output",                                         NULL},
+    {"config",       'c', 0, G_OPTION_ARG_FILENAME, &(irmpc_options.config_file),       "Configuration file",                                            "filename"},
+    {"hostname",     'H', 0, G_OPTION_ARG_STRING,   &(irmpc_options.mpd_hostname),      "Hostname of host running mpd - default: localhost",             "host"},
+    {"password",     'p', 0, G_OPTION_ARG_STRING,   &(irmpc_options.mpd_password),      "Password of mpd",                                               "password"},
+    {"port",         'P', 0, G_OPTION_ARG_INT,      &(irmpc_options.mpd_port),          "Port of mpd - default: port=6600",                              "port"},
+    {"maxtries",     'm', 0, G_OPTION_ARG_INT,      &(irmpc_options.mpd_maxtries),      "Maximum tries for sending mpd commands",                        "n"},
+    {"updaterepeat", 'u', 0, G_OPTION_ARG_INT,      &(irmpc_options.mpd_update_amount), "Amount of times playlist update button needs to be pressed",    "n"},
+    {"volumestep",   's', 0, G_OPTION_ARG_INT,      &(irmpc_options.volume_step),       "Step in percent for volume up/down",                            "step"},
+    {"lircconfig",   'l', 0, G_OPTION_ARG_FILENAME, &(irmpc_options.lirc_config),       "Configuration file for lirc commands",                          "filename"},
+    {"keytimespan",  't', 0, G_OPTION_ARG_INT,      &(irmpc_options.lirc_key_timespan), "Maximum time in seconds between keys of multiple key commands", "span"},
+    {"powercmd",     'C', 0, G_OPTION_ARG_STRING,   &(irmpc_options.power_command),     "System command to execute when poweroff button is pressed",     "command"},
+    {"powerrepeat",  'r', 0, G_OPTION_ARG_INT,      &(irmpc_options.power_amount),      "Amount of times power button needs to be pressed",              "amount"},
+    {"verbose",      'v', 0, 0,                     &(irmpc_options.verbose),           "Set to verbose",                                                NULL},
+    {"debug",        'd', 0, 0,                     &(irmpc_options.debug),             "Activate debug output",                                         NULL},
     {NULL}
 };
 
 static struct option_file_data cfg_file_entries [] = {
-    {"mpd",    "hostname",    G_OPTION_ARG_STRING,   &(irmpc_options.mpd_hostname)},
-    {"mpd",    "password",    G_OPTION_ARG_STRING,   &(irmpc_options.mpd_password)},
-    {"mpd",    "port",        G_OPTION_ARG_INT,      &(irmpc_options.mpd_port)},
-    {"mpd",    "maxtries",    G_OPTION_ARG_INT,      &(irmpc_options.mpd_maxtries)},
-    {"mpd",    "volumestep",  G_OPTION_ARG_INT,      &(irmpc_options.volume_step)},
-    {"lirc",   "lircconfig",  G_OPTION_ARG_FILENAME, &(irmpc_options.lirc_config)},
-    {"lirc",   "keytimespan", G_OPTION_ARG_INT,      &(irmpc_options.lirc_key_timespan)},
-    {"system", "powercmd",    G_OPTION_ARG_STRING,   &(irmpc_options.power_command)},
-    {"system", "powerrepeat", G_OPTION_ARG_INT,      &(irmpc_options.power_amount)},
+    {"mpd",    "hostname",     G_OPTION_ARG_STRING,   &(irmpc_options.mpd_hostname)},
+    {"mpd",    "password",     G_OPTION_ARG_STRING,   &(irmpc_options.mpd_password)},
+    {"mpd",    "port",         G_OPTION_ARG_INT,      &(irmpc_options.mpd_port)},
+    {"mpd",    "maxtries",     G_OPTION_ARG_INT,      &(irmpc_options.mpd_maxtries)},
+    {"mpd",    "updaterepeat", G_OPTION_ARG_INT,      &(irmpc_options.mpd_update_amount)},
+    {"mpd",    "volumestep",   G_OPTION_ARG_INT,      &(irmpc_options.volume_step)},
+    {"lirc",   "lircconfig",   G_OPTION_ARG_FILENAME, &(irmpc_options.lirc_config)},
+    {"lirc",   "keytimespan",  G_OPTION_ARG_INT,      &(irmpc_options.lirc_key_timespan)},
+    {"system", "powercmd",     G_OPTION_ARG_STRING,   &(irmpc_options.power_command)},
+    {"system", "powerrepeat",  G_OPTION_ARG_INT,      &(irmpc_options.power_amount)},
     {NULL}
 };
 
-static bool options_from_file ()
+static bool irmpc_options_from_file ()
 {
     GError   *error    = NULL;
     GKeyFile *key_file = g_key_file_new ();
@@ -222,7 +225,7 @@ bool irmpc_parse_options (int *argc, char ***argv)
     }
 
     if (irmpc_options.config_file != NULL) {
-        if (!options_from_file ()) {
+        if (!irmpc_options_from_file ()) {
             goto irmpc_options_exit_error;
         }
     }

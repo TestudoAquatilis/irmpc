@@ -10,6 +10,7 @@ struct _irmpc_options {
     const char  *mpd_password;
     unsigned int mpd_port;
     unsigned int mpd_maxtries;
+    unsigned int mpd_update_amount;
 
     unsigned int volume_step;
 
