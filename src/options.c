@@ -15,6 +15,7 @@ struct _irmpc_options irmpc_options = {
     .mpd_update_amount = 2,
     .volume_step       = 2,
     .lirc_config       = NULL,
+    .lircd_tries       = 5,
     .lirc_key_timespan = 2,
     .power_command     = NULL,
     .power_amount      = 2,

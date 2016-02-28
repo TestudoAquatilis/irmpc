@@ -15,6 +15,7 @@ struct _irmpc_options {
     unsigned int volume_step;
 
     const char  *lirc_config;
+    unsigned int lircd_tries;
     unsigned int lirc_key_timespan;
 
     const char  *power_command;

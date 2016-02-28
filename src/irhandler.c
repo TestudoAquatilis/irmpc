@@ -56,12 +56,27 @@ static void system_handler (const char *command)
 bool irmpc_irhandler ()
 {
 #ifndef DEBUG_NO_LIRC
-    struct lirc_config *config;
+    bool connected   = false;
+    time_t wait_time = 1;
 
-    if (lirc_init (irmpc_options.progname, 1) == -1) {
-        fprintf (stderr, "ERROR: failed to initialize lirc\n");
+    for (int i = 0; i < irmpc_options.lircd_tries; i++) {
+        if (lirc_init (irmpc_options.progname, 1) == -1) {
+            fprintf (stderr, "ERROR: failed to initialize lirc - trying again in %ld s.\n", wait_time);
+            struct timespec waittime = {wait_time, 0};
+            nanosleep (&waittime, NULL);
+            wait_time *= 2;
+        } else {
+            connected = true;
+            break;
+        }
+    }
+
+    if (!connected) {
+        fprintf (stderr, "ERROR: failed to initialize lirc - giving up.\n");
         return false;
     }
+
+    struct lirc_config *config;
 
     if (lirc_readconfig (irmpc_options.lirc_config, &config, NULL) != 0) {
         fprintf (stderr, "ERROR: failed to load lirc config file\n");
