@@ -8,8 +8,9 @@ struct playlist_info {
     bool        random;
 };
 
-void irmpc_playlist_add  (unsigned int number, const char *name, bool random);
-const struct playlist_info * irmpc_playlist_get  (unsigned int number);
+void                         irmpc_playlist_add      (unsigned int number, const char *name, bool random);
+const struct playlist_info * irmpc_playlist_get      (unsigned int number);
+const struct playlist_info * irmpc_playlist_nextprev (int direction, const char *lookup_name);
 
 void irmpc_playlist_free ();
 void irmpc_playlist_print_debug ();

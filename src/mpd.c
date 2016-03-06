@@ -10,6 +10,8 @@
 
 /* update current playlist */
 static void irmpc_mpd_playlist_update ();
+/* load next/prev playlist */
+static void irmpc_mpd_playlist_nextprev (int direction);
 
 
 /* mpd connection */
@@ -131,6 +133,12 @@ void irmpc_mpd_command (const char *command)
         } else if (strcmp (command, "playlistupdate") == 0) {
             irmpc_mpd_playlist_update ();
             success = true;
+        } else if ((strcmp (command, "nextplaylist") == 0)) {
+            irmpc_mpd_playlist_nextprev (1);
+            success = true;
+        } else if ((strcmp (command, "prevplaylist") == 0)) {
+            irmpc_mpd_playlist_nextprev (-1);
+            success = true;
         } else if ((strcmp (command, "nextalbum") == 0) || (strcmp (command, "prevalbum") == 0)) {
             int queuelen = mpd_status_get_queue_length (status);
             int songpos  = mpd_status_get_song_pos (status);
@@ -243,6 +251,19 @@ static void irmpc_mpd_playlist (const struct playlist_info *playlist)
     } else {
         playlist_current_name = NULL;
     }
+}
+
+/* load next/prev playlist */
+static void irmpc_mpd_playlist_nextprev (int direction)
+{
+    const struct playlist_info *playlist = irmpc_playlist_nextprev (direction, playlist_current_name);
+
+    if (irmpc_options.debug) {
+        printf ("INFO: current playlist: %s\n", playlist_current_name);
+        printf ("INFO: next    playlist: %s\n", playlist->name);
+    }
+
+    irmpc_mpd_playlist (playlist);
 }
 
 /* timestamp for last key press */

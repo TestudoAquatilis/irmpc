@@ -20,6 +20,16 @@ begin
 end
 begin
     prog = irmpc
+    button = KEY_UP
+    config = m:nextplaylist
+end
+begin
+    prog = irmpc
+    button = KEY_DOWN
+    config = m:prevplaylist
+end
+begin
+    prog = irmpc
     button = KEY_RIGHT
     config = m:nextalbum
 end
