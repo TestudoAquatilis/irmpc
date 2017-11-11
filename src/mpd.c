@@ -70,6 +70,9 @@ static const char * irmpc_mpd_command_status_needed[] = {
     "delete",
     "nextalbum",
     "prevalbum",
+    "togglesingle",
+    "togglerandom",
+    "togglerepeat",
     NULL
 };
 
@@ -145,6 +148,36 @@ void irmpc_mpd_command (const char *command)
         } else if ((strcmp (command, "prevplaylist") == 0)) {
             irmpc_mpd_playlist_nextprev (-1);
             success = true;
+        } else if ((strcmp (command, "repeat") == 0) || (strcmp (command, "repeatoff") == 0) || (strcmp (command, "togglerepeat") == 0)) {
+            bool set = true;
+            if (strcmp (command, "repeatoff") == 0) {
+                set = false;
+            } else if (strcmp (command, "repeat") == 0) {
+                set = true;
+            } else {
+                set = !mpd_status_get_repeat (status);
+            }
+            success = mpd_run_repeat (connection, set);
+        } else if ((strcmp (command, "single") == 0) || (strcmp (command, "singleoff") == 0) || (strcmp (command, "togglesingle") == 0)) {
+            bool set = true;
+            if (strcmp (command, "singleoff") == 0) {
+                set = false;
+            } else if (strcmp (command, "single") == 0) {
+                set = true;
+            } else {
+                set = !mpd_status_get_single (status);
+            }
+            success = mpd_run_single (connection, set);
+        } else if ((strcmp (command, "random") == 0) || (strcmp (command, "randomoff") == 0) || (strcmp (command, "togglerandom") == 0)) {
+            bool set = true;
+            if (strcmp (command, "randomoff") == 0) {
+                set = false;
+            } else if (strcmp (command, "random") == 0) {
+                set = true;
+            } else {
+                set = !mpd_status_get_random (status);
+            }
+            success = mpd_run_random (connection, set);
         } else if ((strcmp (command, "nextalbum") == 0) || (strcmp (command, "prevalbum") == 0)) {
             int queuelen = mpd_status_get_queue_length (status);
             int songpos  = mpd_status_get_song_pos (status);
