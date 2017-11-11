@@ -3,12 +3,11 @@ OPTFLAGS=-O2
 CFLAGS=-c -Wall -std=gnu99 $(OPTFLAGS)
 LDFLAGS=$(OPTFLAGS)
 
-LIBS=glib-2.0 libmpdclient
+LIBS=glib-2.0 libmpdclient lirc
 
 CFLAGS+=$(shell pkg-config --cflags $(LIBS))
-LDFLAGS+=$(shell pkg-config --libs $(LIBS)) -llirc_client
-#CFLAGS+=$(shell pkg-config --cflags $(LIBS)) -DDEBUG_NO_LIRC
-#LDFLAGS+=$(shell pkg-config --libs $(LIBS))
+LDFLAGS+=$(shell pkg-config --libs $(LIBS))
+#CFLAGS+= -DDEBUG_NO_LIRC
 
 SOURCES=playlist.c options.c irhandler.c mpd.c main.c
 EXECUTABLE=irmpc
