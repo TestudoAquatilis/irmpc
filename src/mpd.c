@@ -205,9 +205,8 @@ void irmpc_mpd_command (const char *command)
             } else {
                 success = true;
             }
-
-
         } else {
+            fprintf (stderr, "WARNING: ignoring command \"m:%s\" - unknown.\n", command);
             success = true;
         }
 
@@ -428,6 +427,7 @@ void irmpc_mpd_volume (const char *command)
                 current_mute = true;
             }
         } else {
+            fprintf (stderr, "WARNING: ignoring command \"v:%s\" - unknown.\n", command);
             break;
         }
 

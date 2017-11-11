@@ -122,6 +122,10 @@ bool irmpc_irhandler ()
                 if ((number >= 0) && (number <= 9)) {
                     irmpc_mpd_playlist_key (number);
                 }
+            } else {
+                fprintf (stderr, "WARNING: ignoring command \"%s\" - unknown\n", c);
+                continue;
+
             }
 
 #ifdef DEBUG_NO_LIRC
