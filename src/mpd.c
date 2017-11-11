@@ -64,6 +64,15 @@ static bool irmpc_connection_check ()
     return true;
 }
 
+/* commands needing status */
+static const char * irmpc_mpd_command_status_needed[] = {
+    "playpause",
+    "delete",
+    "nextalbum",
+    "prevalbum",
+    NULL
+};
+
 /* handle simple mpd commands */
 void irmpc_mpd_command (const char *command)
 {
@@ -72,14 +81,11 @@ void irmpc_mpd_command (const char *command)
     bool need_status = false;
 
     /* commands needing status */
-    if (strcmp (command, "playpause") == 0) {
-        need_status = true;
-    } else if (strcmp (command, "delete") == 0) {
-        need_status = true;
-    } else if (strcmp (command, "nextalbum") == 0) {
-        need_status = true;
-    } else if (strcmp (command, "prevalbum") == 0) {
-        need_status = true;
+    for (const char **i_needs_stat = irmpc_mpd_command_status_needed; *i_needs_stat != NULL; i_needs_stat++) {
+        if (strcmp (command, *i_needs_stat) == 0) {
+            need_status = true;
+            break;
+        }
     }
 
     while ((!success) && (tries < irmpc_options.mpd_maxtries)) {
