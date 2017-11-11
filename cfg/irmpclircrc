@@ -38,6 +38,21 @@ begin
     button = KEY_LEFT
     config = m:prevalbum
 end
+begin
+    prog = irmpc
+    button = KEY_RANDOM
+    config = m:togglerandom
+end
+begin
+    prog = irmpc
+    button = KEY_SINGLE
+    config = m:togglesingle
+end
+begin
+    prog = irmpc
+    button = KEY_REPEAT
+    config = m:togglerepeat
+end
 
 begin
     prog = irmpc
